@@ -7,14 +7,12 @@ function checkPin() {
     return;
   }
 
-  // Premier lancement : on enregistre le code
   if (!savedPin) {
     localStorage.setItem("pin", input);
     unlock();
     return;
   }
 
-  // Vérification du code
   if (input === savedPin) {
     unlock();
   } else {
