@@ -24,14 +24,26 @@
 
   <section id="gold" class="page gold">
     <h2>Or</h2>
-    <input type="number" id="goldQty" placeholder="Grammes d'or">
+
+    <p>Cours actuel (€/oz)</p>
+    <input type="number" id="goldRate" placeholder="Ex : 1800">
+
+    <p>Quantité (oz)</p>
+    <input type="number" id="goldQty" placeholder="Ex : 2.5">
+
     <p>Valeur : <span id="goldValue">0</span> €</p>
     <canvas id="goldChart"></canvas>
   </section>
 
   <section id="silver" class="page silver hidden">
     <h2>Argent</h2>
-    <input type="number" id="silverQty" placeholder="Grammes d'argent">
+
+    <p>Cours actuel (€/oz)</p>
+    <input type="number" id="silverRate" placeholder="Ex : 25">
+
+    <p>Quantité (oz)</p>
+    <input type="number" id="silverQty" placeholder="Ex : 10">
+
     <p>Valeur : <span id="silverValue">0</span> €</p>
     <canvas id="silverChart"></canvas>
   </section>
