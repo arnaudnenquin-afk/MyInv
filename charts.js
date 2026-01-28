@@ -1,30 +1,24 @@
-const goldChart = new Chart(document.getElementById("goldChart"), {
-  type: 'line',
-  data: {
-    labels: [],
-    datasets: [{
-      label: 'Cours Or €/oz',
-      borderColor: '#D4AF37',
-      data: []
-    }]
-  }
-});
+function createChart(canvasId, label, color) {
+  return new Chart(document.getElementById(canvasId), {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [{
+        label,
+        borderColor: color,
+        data: [],
+        tension: 0.3
+      }]
+    }
+  });
+}
 
-const silverChart = new Chart(document.getElementById("silverChart"), {
-  type: 'line',
-  data: {
-    labels: [],
-    datasets: [{
-      label: 'Cours Argent €/oz',
-      borderColor: '#C0C0C0',
-      data: []
-    }]
-  }
-});
+const goldChart = createChart("goldChart", "Valeur Or (€)", "#D4AF37");
+const silverChart = createChart("silverChart", "Valeur Argent (€)", "#C0C0C0");
 
-function updateChart(chart, rate) {
+function updateChart(chart, value) {
   chart.data.labels.push(new Date().toLocaleTimeString());
-  chart.data.datasets[0].data.push(rate);
+  chart.data.datasets[0].data.push(value);
 
   if (chart.data.labels.length > 10) {
     chart.data.labels.shift();
