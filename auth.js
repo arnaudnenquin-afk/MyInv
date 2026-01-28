@@ -1,38 +1,28 @@
+const auth = firebase.auth();
+
 function login() {
-  firebase.auth()
-    .signInWithEmailAndPassword(
-      document.getElementById("email").value,
-      document.getElementById("password").value
-    )
-    .then(() => window.location.href = "app.html")
-    .catch(e => alert(e.message));
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => { window.location.href = "app.html"; })
+    .catch(err => alert(err.message));
 }
 
 function register() {
-  firebase.auth()
-    .createUserWithEmailAndPassword(
-      document.getElementById("email").value,
-      document.getElementById("password").value
-    )
-    .then(() => window.location.href = "app.html")
-    .catch(e => alert(e.message));
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => { window.location.href = "app.html"; })
+    .catch(err => alert(err.message));
 }
 
 function resetPassword() {
-  const email = document.getElementById("email").value;
-  if (!email) {
-    alert("Entre ton email");
-    return;
-  }
+  const email = document.getElementById("email").value.trim();
+  if (!email) return alert("Entrez votre email");
 
-  firebase.auth()
-    .sendPasswordResetEmail(email)
-    .then(() => alert("Email envoyé"))
-    .catch(e => alert(e.message));
-}
-
-function logout() {
-  firebase.auth().signOut().then(() => {
-    window.location.href = "index.html";
-  });
+  auth.sendPasswordResetEmail(email)
+    .then(() => alert("Email de récupération envoyé"))
+    .catch(err => alert(err.message));
 }
