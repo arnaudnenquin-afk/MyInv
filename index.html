@@ -1,64 +1,29 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>MyInv</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8">
+  <title>MyInv - Connexion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
   <link rel="stylesheet" href="style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<!-- ÉCRAN DE VERROUILLAGE -->
-<div id="lockScreen" class="screen">
+<div class="screen">
   <h1>MyInv</h1>
-  <input type="password" id="pinInput" maxlength="6" placeholder="Code à 6 caractères">
-  <button id="unlockBtn">Déverrouiller</button>
-</div>
 
-<!-- APPLICATION -->
-<div id="app" class="hidden">
-  <nav>
-    <button data-page="gold">Or</button>
-    <button data-page="silver">Argent</button>
-  </nav>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Mot de passe">
 
-  <!-- OR -->
-  <section id="gold" class="page gold">
-    <h2>Or</h2>
+  <button onclick="login()">Connexion</button>
+  <button onclick="register()">Créer un compte</button>
 
-    <p>Cours (€/oz)</p>
-    <input type="number" id="goldRate" placeholder="Auto ou manuel">
-    <small id="goldSource"></small>
-
-    <p>Quantité (oz)</p>
-    <input type="number" id="goldQty">
-
-    <p>Valeur : <span id="goldValue">0</span> €</p>
-    <canvas id="goldChart"></canvas>
-  </section>
-
-  <!-- ARGENT -->
-  <section id="silver" class="page silver hidden">
-    <h2>Argent</h2>
-
-    <p>Cours (€/oz)</p>
-    <input type="number" id="silverRate" placeholder="Auto ou manuel">
-    <small id="silverSource"></small>
-
-    <p>Quantité (oz)</p>
-    <input type="number" id="silverQty">
-
-    <p>Valeur : <span id="silverValue">0</span> €</p>
-    <canvas id="silverChart"></canvas>
-  </section>
+  <p>
+    <a href="#" onclick="resetPassword()">Mot de passe oublié ?</a>
+  </p>
 </div>
 
 <script src="auth.js"></script>
-<script src="charts.js"></script>
-<script src="app.js"></script>
 </body>
 </html>
