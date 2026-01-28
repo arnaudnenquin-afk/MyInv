@@ -10,7 +10,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- Charts -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <link rel="stylesheet" href="style.css">
@@ -20,20 +20,28 @@
 <div class="screen">
 
   <nav>
-    <button onclick="firebase.auth().signOut().then(()=>window.location.href='index.html')">Déconnexion</button>
+    <button onclick="firebase.auth().signOut().then(()=>window.location.href='index.html')">
+      Déconnexion
+    </button>
   </nav>
 
   <h2>Mon portefeuille</h2>
 
-  <p>Cours actuel Or (€/oz) : <span id="goldRate">0</span></p>
-  <input type="number" id="goldQty" placeholder="Quantité Or (oz)">
+  <div class="metal-row">
+    <label>Or (€/oz) : </label>
+    <span id="goldRate">0</span>
+    <input type="number" id="goldQty" placeholder="Quantité Or (oz)">
+  </div>
 
-  <p>Cours actuel Argent (€/oz) : <span id="silverRate">0</span></p>
-  <input type="number" id="silverQty" placeholder="Quantité Argent (oz)">
+  <div class="metal-row">
+    <label>Argent (€/oz) : </label>
+    <span id="silverRate">0</span>
+    <input type="number" id="silverQty" placeholder="Quantité Argent (oz)">
+  </div>
 
   <p>Valeur totale : <strong><span id="totalValue">0</span> €</strong></p>
 
-  <canvas id="portfolioChart"></canvas>
+  <canvas id="portfolioChart" height="200"></canvas>
 
 </div>
 
