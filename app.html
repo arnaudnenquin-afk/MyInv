@@ -17,44 +17,42 @@
 </head>
 <body>
 
+<div class="screen">
+
+  <nav>
+    <button onclick="firebase.auth().signOut().then(()=>window.location.href='index.html')">Déconnexion</button>
+  </nav>
+
+  <h2>Mon portefeuille</h2>
+
+  <p>Cours actuel Or (€/oz) : <span id="goldRate">0</span></p>
+  <input type="number" id="goldQty" placeholder="Quantité Or (oz)">
+
+  <p>Cours actuel Argent (€/oz) : <span id="silverRate">0</span></p>
+  <input type="number" id="silverQty" placeholder="Quantité Argent (oz)">
+
+  <p>Valeur totale : <strong><span id="totalValue">0</span> €</strong></p>
+
+  <canvas id="portfolioChart"></canvas>
+
+</div>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyD1gMUrKtn9Aeup3wHU1xb-PyUfjCxu68w",
     authDomain: "myinv-b0648.firebaseapp.com",
     projectId: "myinv-b0648",
     storageBucket: "myinv-b0648.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef123456"
+    messagingSenderId: "93472966782",
+    appId: "1:93472966782:web:46b37cb56fea8331a1302f"
   };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user) window.location.href = "index.html";
-  });
 </script>
 
-<nav>
-  <button onclick="logout()">Déconnexion</button>
-</nav>
-
-<section class="page">
-  <h2>Mon portefeuille</h2>
-
-  <label>Or (oz)</label>
-  <input type="number" id="goldQty">
-
-  <label>Argent (oz)</label>
-  <input type="number" id="silverQty">
-
-  <p>Total : <strong><span id="totalValue">0</span> €</strong></p>
-
-  <canvas id="portfolioChart"></canvas>
-</section>
-
-<script src="auth.js"></script>
 <script src="charts.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
