@@ -1,61 +1,11 @@
-const USD_TO_EUR = 0.92; // fallback si conversion manquante
-
 // DOM elements
 const goldQty = document.getElementById("goldQty");
 const silverQty = document.getElementById("silverQty");
+const goldRateInput = document.getElementById("goldRate");
+const silverRateInput = document.getElementById("silverRate");
 const totalValue = document.getElementById("totalValue");
-const goldRateSpan = document.getElementById("goldRate");
-const silverRateSpan = document.getElementById("silverRate");
 
-// Ta clé MetalpriceAPI
-const API_KEY = "bab0d9b3e373a823cba61599e7ca2b61";
-
-// -------------------------------------------
-// FONCTION QUI RÉCUPÈRE LES PRIX EN DIRECT
-// -------------------------------------------
-async function fetchRealPrices() {
-  const url = `https://api.metalpriceapi.com/v1/latest?base=USD&symbols=USDXAU,USDXAG,USDEUR&apiKey=${API_KEY}`;
-
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-
-    const goldUSD = data.rates["USDXAU"] || 0;
-    const silverUSD = data.rates["USDXAG"] || 0;
-    const usdToEur = data.rates["USDEUR"] || USD_TO_EUR;
-
-    return {
-      gold: goldUSD * usdToEur,
-      silver: silverUSD * usdToEur
-    };
-  } catch (err) {
-    console.error("Erreur récupération des prix :", err);
-    return { gold: 0, silver: 0 };
-  }
-}
-
-// -------------------------------------------
-// AFFICHAGE DES PRIX
-// -------------------------------------------
-function displayPrices(prices) {
-  goldRateSpan.innerText = prices.gold.toFixed(2);
-  silverRateSpan.innerText = prices.silver.toFixed(2);
-}
-
-// -------------------------------------------
-// CALCUL VALEUR TOTALE
-// -------------------------------------------
-function updateTotal(prices) {
-  const goldValue = prices.gold * (+goldQty.value || 0);
-  const silverValue = prices.silver * (+silverQty.value || 0);
-  const total = goldValue + silverValue;
-  totalValue.innerText = total.toFixed(2);
-  return { goldValue, silverValue, total };
-}
-
-// -------------------------------------------
-// SAUVEGARDE DU PORTEFEUILLE FIRESTORE
-// -------------------------------------------
+// Sauvegarde du portefeuille Firestore
 async function savePortfolio() {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -64,18 +14,21 @@ async function savePortfolio() {
     .collection("portfolio").doc("current")
     .set({
       goldQty: +goldQty.value || 0,
-      silverQty: +silverQty.value || 0
+      silverQty: +silverQty.value || 0,
+      goldRate: +goldRateInput.value || 0,
+      silverRate: +silverRateInput.value || 0
     });
 }
 
-// -------------------------------------------
-// SAUVEGARDE JOURNALIÈRE
-// -------------------------------------------
-async function saveDailyHistory(prices) {
+// Sauvegarde journalière
+async function saveDailyHistory() {
   const user = firebase.auth().currentUser;
   if (!user) return;
 
-  const { goldValue, silverValue, total } = updateTotal(prices);
+  const goldValue = (+goldQty.value || 0) * (+goldRateInput.value || 0);
+  const silverValue = (+silverQty.value || 0) * (+silverRateInput.value || 0);
+  const total = goldValue + silverValue;
+
   const today = new Date().toISOString().split("T")[0];
 
   await db.collection("users").doc(user.uid)
@@ -88,26 +41,26 @@ async function saveDailyHistory(prices) {
     });
 }
 
-// -------------------------------------------
-// CHARGEMENT DU PORTEFEUILLE
-// -------------------------------------------
+// Charger le portefeuille
 async function loadPortfolio() {
   const user = firebase.auth().currentUser;
   if (!user) return;
 
   const doc = await db.collection("users").doc(user.uid)
-    .collection("portfolio").doc("current")
-    .get();
+    .collection("portfolio").doc("current").get();
 
   if (doc.exists) {
     goldQty.value = doc.data().goldQty || 0;
     silverQty.value = doc.data().silverQty || 0;
+    goldRateInput.value = doc.data().goldRate || 0;
+    silverRateInput.value = doc.data().silverRate || 0;
   }
+
+  updateValues();
+  loadHistory();
 }
 
-// -------------------------------------------
-// CHARGEMENT DE L’HISTORIQUE
-// -------------------------------------------
+// Charger l’historique pour le graphique
 async function loadHistory() {
   const user = firebase.auth().currentUser;
   if (!user) return [];
@@ -115,46 +68,32 @@ async function loadHistory() {
   const snap = await db.collection("users").doc(user.uid)
     .collection("history").orderBy("timestamp").get();
 
-  return snap.docs.map(d => ({ date: d.id, ...d.data() }));
-}
-
-// -------------------------------------------
-// RAFRAÎCHIR PORTFOLIO & GRAPHIQUE
-// -------------------------------------------
-async function refreshPortfolio() {
-  const prices = await fetchRealPrices();
-  displayPrices(prices);
-  await saveDailyHistory(prices);
-  const history = await loadHistory();
+  const history = snap.docs.map(d => ({ date: d.id, ...d.data() }));
   updatePortfolioChart(history);
+  return history;
 }
 
-// -------------------------------------------
-// RAFRAÎCHISSEMENT AUTOMATIQUE TOUS LES 5 MINUTES
-// -------------------------------------------
-function startAutoRefresh() {
-  setInterval(refreshPortfolio, 300000); // 5 min
+// Calcul et affichage des valeurs
+function updateValues() {
+  const goldValue = (+goldQty.value || 0) * (+goldRateInput.value || 0);
+  const silverValue = (+silverQty.value || 0) * (+silverRateInput.value || 0);
+  const total = goldValue + silverValue;
+
+  totalValue.innerText = total.toFixed(2);
 }
 
-// -------------------------------------------
-// MISE À JOUR INSTANTANÉE À LA SAISIE
-// -------------------------------------------
-[goldQty, silverQty].forEach(input => {
+// Mise à jour instantanée au changement
+[goldQty, silverQty, goldRateInput, silverRateInput].forEach(input => {
   input.addEventListener("input", async () => {
-    const prices = await fetchRealPrices();
-    displayPrices(prices);
-    updateTotal(prices);
+    updateValues();
     await savePortfolio();
+    await saveDailyHistory();
   });
 });
 
-// -------------------------------------------
-// INITIALISATION APRÈS CONNEXION
-// -------------------------------------------
+// Initialisation après connexion
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return;
 
   await loadPortfolio();
-  await refreshPortfolio();
-  startAutoRefresh();
 });
