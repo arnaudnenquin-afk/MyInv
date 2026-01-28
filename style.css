@@ -1,7 +1,50 @@
-body { margin:0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:black; color:white; text-align:center; }
-.hidden { display:none; }
-.screen { padding:20px; display:flex; flex-direction:column; gap:15px; }
-input,button { padding:12px; font-size:16px; }
-nav button { padding:10px; background:#111; color:white; border:none; margin-bottom:10px; }
-.metal-row { display:flex; gap:10px; justify-content:center; align-items:center; margin-bottom:10px; }
-canvas { background:black; margin-top:20px; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+}
+
+.screen {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+input, button {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+}
+
+button {
+  background: #222;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #333;
+}
+
+nav button {
+  margin-bottom: 20px;
+}
+
+.metal-row {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+canvas {
+  background: #000;
+  margin-top: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(255,255,255,0.2);
+}
