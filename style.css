@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: system-ui, sans-serif;
   background: black;
   color: white;
   text-align: center;
@@ -29,19 +29,15 @@ nav button {
   border: none;
 }
 
-.page {
-  padding: 20px;
-}
+.page { padding: 20px; }
 
-.gold {
-  color: #D4AF37;
-}
+.gold { color: #D4AF37; }
+.silver { color: #C0C0C0; }
 
-.silver {
-  color: #C0C0C0;
-}
+canvas { margin-top: 20px; }
 
-canvas {
-  background: black;
-  margin-top: 20px;
+small {
+  display: block;
+  opacity: 0.7;
+  margin-bottom: 10px;
 }
