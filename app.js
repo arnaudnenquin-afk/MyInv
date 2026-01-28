@@ -1,98 +1,82 @@
-// ================= CONFIG =================
-const API_URL = "https://api.metals.live/v1/spot";
-const USD_TO_EUR = 0.92;
-const REFRESH_INTERVAL = 10 * 60 * 1000;
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>MyInv</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-// ================= NAVIGATION =================
-function showPage(page) {
-  document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
-  document.getElementById(page).classList.remove("hidden");
-}
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
 
-document.querySelectorAll("nav button").forEach(btn => {
-  btn.addEventListener("click", () => showPage(btn.dataset.page));
-});
+  <!-- Chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-// ================= STORAGE =================
-function saveData() {
-  ["goldRate", "goldQty", "silverRate", "silverQty"].forEach(id => {
-    localStorage.setItem(id, document.getElementById(id).value);
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 🔒 PROTECTION AUTH -->
+<script>
+  const firebaseConfig = {
+    apiKey: "XXX",
+    authDomain: "XXX.firebaseapp.com",
+    projectId: "XXX",
+    appId: "XXX"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) {
+      window.location.href = "index.html";
+    }
   });
-}
+</script>
 
-function loadData() {
-  ["goldRate", "goldQty", "silverRate", "silverQty"].forEach(id => {
-    document.getElementById(id).value = localStorage.getItem(id) || "";
-  });
-  updateGold();
-  updateSilver();
-}
+<!-- APP -->
+<div id="app">
 
-// ================= CALCULS =================
-function updateGold() {
-  const rate = +goldRate.value || 0;
-  const qty = +goldQty.value || 0;
-  const value = rate * qty;
+  <nav>
+    <button data-page="gold">Or</button>
+    <button data-page="silver">Argent</button>
+    <button onclick="logout()">Déconnexion</button>
+  </nav>
 
-  goldValue.innerText = value.toFixed(2);
-  updateChart(goldChart, value);
-}
+  <!-- OR -->
+  <section id="gold" class="page gold">
+    <h2>Or</h2>
 
-function updateSilver() {
-  const rate = +silverRate.value || 0;
-  const qty = +silverQty.value || 0;
-  const value = rate * qty;
+    <p>Cours (€/oz)</p>
+    <input type="number" id="goldRate">
+    <small id="goldSource"></small>
 
-  silverValue.innerText = value.toFixed(2);
-  updateChart(silverChart, value);
-}
+    <p>Quantité (oz)</p>
+    <input type="number" id="goldQty">
 
-// ================= API PRIX RÉEL =================
-async function fetchRealPrices() {
-  try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
+    <p>Valeur : <span id="goldValue">0</span> €</p>
+    <canvas id="goldChart"></canvas>
+  </section>
 
-    const goldEUR = (data.gold * USD_TO_EUR).toFixed(2);
-    const silverEUR = (data.silver * USD_TO_EUR).toFixed(2);
+  <!-- ARGENT -->
+  <section id="silver" class="page silver hidden">
+    <h2>Argent</h2>
 
-    goldRate.value = goldEUR;
-    silverRate.value = silverEUR;
+    <p>Cours (€/oz)</p>
+    <input type="number" id="silverRate">
+    <small id="silverSource"></small>
 
-    localStorage.setItem("goldRate", goldEUR);
-    localStorage.setItem("silverRate", silverEUR);
+    <p>Quantité (oz)</p>
+    <input type="number" id="silverQty">
 
-    goldSource.innerText = `API metals.live • ${new Date().toLocaleTimeString()}`;
-    silverSource.innerText = `API metals.live • ${new Date().toLocaleTimeString()}`;
+    <p>Valeur : <span id="silverValue">0</span> €</p>
+    <canvas id="silverChart"></canvas>
+  </section>
 
-    updateGold();
-    updateSilver();
-  } catch (e) {
-    goldSource.innerText = "Valeur manuelle";
-    silverSource.innerText = "Valeur manuelle";
-  }
-}
+</div>
 
-// ================= EVENTS =================
-["goldRate", "goldQty"].forEach(id => {
-  document.getElementById(id).addEventListener("input", () => {
-    saveData();
-    goldSource.innerText = "Valeur manuelle";
-    updateGold();
-  });
-});
-
-["silverRate", "silverQty"].forEach(id => {
-  document.getElementById(id).addEventListener("input", () => {
-    saveData();
-    silverSource.innerText = "Valeur manuelle";
-    updateSilver();
-  });
-});
-
-// ================= INIT =================
-document.addEventListener("DOMContentLoaded", () => {
-  loadData();
-  fetchRealPrices();
-  setInterval(fetchRealPrices, REFRESH_INTERVAL);
-});
+<script src="auth.js"></script>
+<script src="charts.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
