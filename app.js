@@ -1,82 +1,96 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <title>MyInv</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+const API_URL = "https://api.metals.live/v1/spot";
+const USD_TO_EUR = 0.92;
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+function todayKey() {
+  return new Date().toISOString().split("T")[0];
+}
 
-  <!-- Chart -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+async function fetchRealPrices() {
+  const res = await fetch(API_URL);
+  const data = await res.json();
 
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<!-- 🔒 PROTECTION AUTH -->
-<script>
-  const firebaseConfig = {
-    apiKey: "XXX",
-    authDomain: "XXX.firebaseapp.com",
-    projectId: "XXX",
-    appId: "XXX"
+  return {
+    gold: data.gold * USD_TO_EUR,
+    silver: data.silver * USD_TO_EUR
   };
+}
 
-  firebase.initializeApp(firebaseConfig);
+async function savePortfolio() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user) {
-      window.location.href = "index.html";
-    }
-  });
-</script>
+  await db.collection("users")
+    .doc(user.uid)
+    .collection("portfolio")
+    .doc("current")
+    .set({
+      goldQty: +goldQty.value || 0,
+      silverQty: +silverQty.value || 0
+    });
+}
 
-<!-- APP -->
-<div id="app">
+async function loadPortfolio() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
-  <nav>
-    <button data-page="gold">Or</button>
-    <button data-page="silver">Argent</button>
-    <button onclick="logout()">Déconnexion</button>
-  </nav>
+  const doc = await db.collection("users")
+    .doc(user.uid)
+    .collection("portfolio")
+    .doc("current")
+    .get();
 
-  <!-- OR -->
-  <section id="gold" class="page gold">
-    <h2>Or</h2>
+  if (doc.exists) {
+    goldQty.value = doc.data().goldQty || 0;
+    silverQty.value = doc.data().silverQty || 0;
+  }
+}
 
-    <p>Cours (€/oz)</p>
-    <input type="number" id="goldRate">
-    <small id="goldSource"></small>
+async function saveDailyHistory(prices) {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
-    <p>Quantité (oz)</p>
-    <input type="number" id="goldQty">
+  const goldValue = prices.gold * (+goldQty.value || 0);
+  const silverValue = prices.silver * (+silverQty.value || 0);
+  const total = goldValue + silverValue;
 
-    <p>Valeur : <span id="goldValue">0</span> €</p>
-    <canvas id="goldChart"></canvas>
-  </section>
+  totalValue.innerText = total.toFixed(2);
 
-  <!-- ARGENT -->
-  <section id="silver" class="page silver hidden">
-    <h2>Argent</h2>
+  await db.collection("users")
+    .doc(user.uid)
+    .collection("history")
+    .doc(todayKey())
+    .set({
+      gold: goldValue,
+      silver: silverValue,
+      total,
+      timestamp: Date.now()
+    });
+}
 
-    <p>Cours (€/oz)</p>
-    <input type="number" id="silverRate">
-    <small id="silverSource"></small>
+async function loadHistory() {
+  const user = firebase.auth().currentUser;
+  if (!user) return [];
 
-    <p>Quantité (oz)</p>
-    <input type="number" id="silverQty">
+  const snap = await db.collection("users")
+    .doc(user.uid)
+    .collection("history")
+    .orderBy("timestamp")
+    .get();
 
-    <p>Valeur : <span id="silverValue">0</span> €</p>
-    <canvas id="silverChart"></canvas>
-  </section>
+  return snap.docs.map(d => ({ date: d.id, ...d.data() }));
+}
 
-</div>
+["goldQty", "silverQty"].forEach(id => {
+  document.getElementById(id).addEventListener("input", savePortfolio);
+});
 
-<script src="auth.js"></script>
-<script src="charts.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) return;
+
+  await loadPortfolio();
+  const prices = await fetchRealPrices();
+  await saveDailyHistory(prices);
+
+  const history = await loadHistory();
+  updatePortfolioChart(history);
+});
