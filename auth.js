@@ -1,4 +1,4 @@
-// 🔥 Firebase config (COLLE LA TIENNE ICI)
+// ================= FIREBASE INIT =================
 const firebaseConfig = {
   apiKey: "XXX",
   authDomain: "XXX.firebaseapp.com",
@@ -6,14 +6,13 @@ const firebaseConfig = {
   appId: "XXX"
 };
 
-// Init
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// LOGIN
+// ================= LOGIN =================
 function login() {
-  const email = email.value;
-  const password = password.value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   auth.signInWithEmailAndPassword(email, password)
     .then(() => {
@@ -22,19 +21,20 @@ function login() {
     .catch(err => alert(err.message));
 }
 
-// REGISTER
+// ================= REGISTER =================
 function register() {
-  const email = email.value;
-  const password = password.value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   auth.createUserWithEmailAndPassword(email, password)
-    .then(() => alert("Compte créé, connecte-toi"))
+    .then(() => alert("Compte créé. Connecte-toi."))
     .catch(err => alert(err.message));
 }
 
-// RESET PASSWORD
+// ================= RESET PASSWORD =================
 function resetPassword() {
   const email = document.getElementById("email").value;
+
   if (!email) {
     alert("Entre ton email");
     return;
@@ -42,5 +42,14 @@ function resetPassword() {
 
   auth.sendPasswordResetEmail(email)
     .then(() => alert("Email de récupération envoyé"))
+    .catch(err => alert(err.message));
+}
+
+// ================= LOGOUT =================
+function logout() {
+  auth.signOut()
+    .then(() => {
+      window.location.href = "index.html";
+    })
     .catch(err => alert(err.message));
 }
