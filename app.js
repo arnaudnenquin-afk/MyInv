@@ -8,7 +8,7 @@ const totalValue = document.getElementById("totalValue");
 const goldRateSpan = document.getElementById("goldRate");
 const silverRateSpan = document.getElementById("silverRate");
 
-// Récupération des prix réels gratuits
+// Fonction pour récupérer les prix gratuits
 async function fetchRealPrices() {
   try {
     const res = await fetch("https://api.metals.live/v1/spot");
@@ -23,7 +23,7 @@ async function fetchRealPrices() {
   }
 }
 
-// Mettre à jour les spans avec les prix
+// Afficher les prix dans les spans
 function displayPrices(prices) {
   goldRateSpan.innerText = prices.gold.toFixed(2);
   silverRateSpan.innerText = prices.silver.toFixed(2);
@@ -38,76 +38,7 @@ function updateTotal(prices) {
   return { goldValue, silverValue, total };
 }
 
-// Fonction principale
-firebase.auth().onAuthStateChanged(async user => {
-  if (!user) return;
-
-  // Charger les quantités sauvegardées
-  const doc = await db.collection("users").doc(user.uid)
-    .collection("portfolio").doc("current").get();
-
-  if (doc.exists) {
-    goldQty.value = doc.data().goldQty || 0;
-    silverQty.value = doc.data().silverQty || 0;
-  }
-
-  // Récupérer les prix et afficher
-  const prices = await fetchRealPrices();
-  displayPrices(prices);
-
-  // Calcul et sauvegarde
-  const values = updateTotal(prices);
-
-  // Sauvegarde journalière
-  const today = new Date().toISOString().split("T")[0];
-  await db.collection("users").doc(user.uid)
-    .collection("history").doc(today)
-    .set({
-      gold: values.goldValue,
-      silver: values.silverValue,
-      total: values.total,
-      timestamp: Date.now()
-    });
-
-  // Mettre à jour le graphique
-  const historySnap = await db.collection("users").doc(user.uid)
-    .collection("history").orderBy("timestamp").get();
-
-  const history = historySnap.docs.map(d => ({ date: d.id, ...d.data() }));
-  updatePortfolioChart(history);
-
-  // Actualisation toutes les 5 min
-  setInterval(async () => {
-    const newPrices = await fetchRealPrices();
-    displayPrices(newPrices);
-    const newValues = updateTotal(newPrices);
-    const todayKey = new Date().toISOString().split("T")[0];
-    await db.collection("users").doc(user.uid)
-      .collection("history").doc(todayKey)
-      .set({
-        gold: newValues.goldValue,
-        silver: newValues.silverValue,
-        total: newValues.total,
-        timestamp: Date.now()
-      });
-    const snap = await db.collection("users").doc(user.uid)
-      .collection("history").orderBy("timestamp").get();
-    const newHistory = snap.docs.map(d => ({ date: d.id, ...d.data() }));
-    updatePortfolioChart(newHistory);
-  }, 300000);
-});
-
-// Mettre à jour la valeur totale quand l’utilisateur change la quantité
-[goldQty, silverQty].forEach(input => {
-  input.addEventListener("input", async () => {
-    const prices = await fetchRealPrices();
-    displayPrices(prices);
-    const values = updateTotal(prices);
-    savePortfolio();
-  });
-});
-
-// Sauvegarde du portefeuille
+// Sauvegarde du portefeuille dans Firestore
 async function savePortfolio() {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -119,3 +50,77 @@ async function savePortfolio() {
     });
 }
 
+// Sauvegarde journalière des valeurs
+async function saveDailyHistory(prices) {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const { goldValue, silverValue, total } = updateTotal(prices);
+  const today = new Date().toISOString().split("T")[0];
+
+  await db.collection("users").doc(user.uid)
+    .collection("history").doc(today)
+    .set({
+      gold: goldValue,
+      silver: silverValue,
+      total,
+      timestamp: Date.now()
+    });
+}
+
+// Chargement du portefeuille Firestore
+async function loadPortfolio() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const doc = await db.collection("users").doc(user.uid)
+    .collection("portfolio").doc("current")
+    .get();
+
+  if (doc.exists) {
+    goldQty.value = doc.data().goldQty || 0;
+    silverQty.value = doc.data().silverQty || 0;
+  }
+}
+
+// Chargement de l'historique pour le graphique
+async function loadHistory() {
+  const user = firebase.auth().currentUser;
+  if (!user) return [];
+
+  const snap = await db.collection("users").doc(user.uid)
+    .collection("history").orderBy("timestamp").get();
+
+  return snap.docs.map(d => ({ date: d.id, ...d.data() }));
+}
+
+// Mise à jour du portefeuille et graphique
+async function refreshPortfolio() {
+  const prices = await fetchRealPrices();
+  displayPrices(prices);
+  await saveDailyHistory(prices);
+  const history = await loadHistory();
+  updatePortfolioChart(history);
+}
+
+// Mise à jour dynamique toutes les 5 minutes
+function startAutoRefresh() {
+  setInterval(refreshPortfolio, 300000); // 5 min
+}
+
+// Détecter changement de quantité et recalculer
+[goldQty, silverQty].forEach(input => {
+  input.addEventListener("input", async () => {
+    await savePortfolio();
+    await refreshPortfolio();
+  });
+});
+
+// Exécution principale après connexion
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) return;
+
+  await loadPortfolio();
+  await refreshPortfolio();
+  startAutoRefresh();
+});
