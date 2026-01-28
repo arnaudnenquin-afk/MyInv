@@ -27,7 +27,7 @@ function resetPassword() {
 
   firebase.auth()
     .sendPasswordResetEmail(email)
-    .then(() => alert("Email de récupération envoyé"))
+    .then(() => alert("Email envoyé"))
     .catch(e => alert(e.message));
 }
 
