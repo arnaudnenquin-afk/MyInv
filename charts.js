@@ -1,28 +1,22 @@
-function createChart(canvasId, label, color) {
-  return new Chart(document.getElementById(canvasId), {
+const portfolioChart = new Chart(
+  document.getElementById("portfolioChart"),
+  {
     type: "line",
     data: {
       labels: [],
-      datasets: [{
-        label,
-        borderColor: color,
-        data: [],
-        tension: 0.3
-      }]
+      datasets: [
+        { label: "Total (€)", data: [] },
+        { label: "Or (€)", data: [] },
+        { label: "Argent (€)", data: [] }
+      ]
     }
-  });
-}
-
-const goldChart = createChart("goldChart", "Valeur Or (€)", "#D4AF37");
-const silverChart = createChart("silverChart", "Valeur Argent (€)", "#C0C0C0");
-
-function updateChart(chart, value) {
-  chart.data.labels.push(new Date().toLocaleTimeString());
-  chart.data.datasets[0].data.push(value);
-
-  if (chart.data.labels.length > 10) {
-    chart.data.labels.shift();
-    chart.data.datasets[0].data.shift();
   }
-  chart.update();
+);
+
+function updatePortfolioChart(history) {
+  portfolioChart.data.labels = history.map(h => h.date);
+  portfolioChart.data.datasets[0].data = history.map(h => h.total);
+  portfolioChart.data.datasets[1].data = history.map(h => h.gold);
+  portfolioChart.data.datasets[2].data = history.map(h => h.silver);
+  portfolioChart.update();
 }
