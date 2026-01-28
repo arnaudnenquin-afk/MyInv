@@ -4,45 +4,53 @@
   <meta charset="UTF-8" />
   <title>MyInv</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
+<!-- ÉCRAN DE VERROUILLAGE -->
 <div id="lockScreen" class="screen">
   <h1>MyInv</h1>
   <input type="password" id="pinInput" maxlength="6" placeholder="Code à 6 caractères">
-  <button onclick="checkPin()">Déverrouiller</button>
+  <button id="unlockBtn">Déverrouiller</button>
 </div>
 
+<!-- APPLICATION -->
 <div id="app" class="hidden">
   <nav>
-    <button onclick="showPage('gold')">Or</button>
-    <button onclick="showPage('silver')">Argent</button>
+    <button data-page="gold">Or</button>
+    <button data-page="silver">Argent</button>
   </nav>
 
+  <!-- OR -->
   <section id="gold" class="page gold">
     <h2>Or</h2>
 
-    <p>Cours actuel (€/oz)</p>
-    <input type="number" id="goldRate" placeholder="Ex : 1800">
+    <p>Cours (€/oz)</p>
+    <input type="number" id="goldRate" placeholder="Auto ou manuel">
+    <small id="goldSource"></small>
 
     <p>Quantité (oz)</p>
-    <input type="number" id="goldQty" placeholder="Ex : 2.5">
+    <input type="number" id="goldQty">
 
     <p>Valeur : <span id="goldValue">0</span> €</p>
     <canvas id="goldChart"></canvas>
   </section>
 
+  <!-- ARGENT -->
   <section id="silver" class="page silver hidden">
     <h2>Argent</h2>
 
-    <p>Cours actuel (€/oz)</p>
-    <input type="number" id="silverRate" placeholder="Ex : 25">
+    <p>Cours (€/oz)</p>
+    <input type="number" id="silverRate" placeholder="Auto ou manuel">
+    <small id="silverSource"></small>
 
     <p>Quantité (oz)</p>
-    <input type="number" id="silverQty" placeholder="Ex : 10">
+    <input type="number" id="silverQty">
 
     <p>Valeur : <span id="silverValue">0</span> €</p>
     <canvas id="silverChart"></canvas>
